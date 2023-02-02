@@ -13,6 +13,7 @@
 #include "adreno_gen7.h"
 #include "adreno_gen7_hwsched.h"
 #include "adreno_snapshot.h"
+#include "kgsl_bus.h"
 #include "kgsl_device.h"
 #include "kgsl_trace.h"
 #include "kgsl_util.h"
@@ -794,6 +795,8 @@ static int gen7_hwsched_first_boot(struct adreno_device *adreno_dev)
 	set_bit(GMU_PRIV_FIRST_BOOT_DONE, &gmu->flags);
 	set_bit(GMU_PRIV_GPU_STARTED, &gmu->flags);
 
+	adreno_dev->hwsched_enabled = true;
+
 	/*
 	 * BCL needs respective Central Broadcast register to
 	 * be programed from TZ. This programing happens only
@@ -1119,6 +1122,8 @@ static int gen7_hwsched_bus_set(struct adreno_device *adreno_dev, int buslevel,
 	struct kgsl_device *device = KGSL_DEVICE(adreno_dev);
 	struct kgsl_pwrctrl *pwr = &device->pwrctrl;
 	int ret = 0;
+
+	kgsl_icc_set_tag(pwr, buslevel);
 
 	if (buslevel != pwr->cur_buslevel) {
 		ret = gen7_hwsched_dcvs_set(adreno_dev, INVALID_DCVS_IDX,
